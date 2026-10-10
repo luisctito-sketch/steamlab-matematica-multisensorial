@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STEAMLab · Matemática multisensorial</title>
+  <style>
+    :root{
+      --bg1:#08213f;
+      --bg2:#0f3e70;
+      --card:#0d2f57cc;
+      --line:#67d7ff;
+      --accent:#39e0ff;
+      --accent2:#ffdd57;
+      --text:#eef8ff;
+      --muted:#cde8f2;
+      --ok:#7ef4b3;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color:var(--text);
+      background: radial-gradient(circle at top, #114f90 0%, var(--bg1) 40%, #06162c 100%);
+      min-height:100vh;
+    }
+    .wrap{max-width:1200px;margin:0 auto;padding:24px}
+    .hero{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:24px;
+      align-items:center;
+      min-height:100vh;
+    }
+    .pill{display:inline-block;background:#163f71;border:1px solid #5fd2ff;border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px;color:#d8fbff}
+    h1{font-size:clamp(2rem,4vw,4rem);line-height:1.05;margin:16px 0 14px}
+    p{font-size:1.1rem;line-height:1.65;color:var(--muted)}
+    .box{
+      background:var(--card);
+      border:1px solid rgba(103,215,255,.35);
+      border-radius:22px;
+      padding:22px;
+      box-shadow:0 20px 50px rgba(0,0,0,.3);
+      backdrop-filter: blur(6px);
+    }
+    .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      text-decoration:none;color:#062038;font-weight:800;
+      background:linear-gradient(135deg,var(--accent),#80f6ff);
+      border:none;border-radius:14px;padding:14px 18px;cursor:pointer;
+      box-shadow:0 10px 22px rgba(57,224,255,.25);
+    }
+    .btn.secondary{background:#173b67;color:#eef8ff;border:1px solid rgba(255,255,255,.15);box-shadow:none}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px}
+    .mini{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px}
+    .mini h3{margin:0 0 8px;font-size:1rem;color:#ffffff}
+    .mini p{margin:0;font-size:.96rem;line-height:1.5}
+    .scene{
+      position:relative;height:560px;border-radius:28px;overflow:hidden;
+      background:
+        linear-gradient(to bottom, #b5efff 0%, #92ddff 18%, #d5fbff 18.2%, #ffe7b6 18.3%, #fff7dc 20%, #fff9ef 40%, #ffe8c7 60%, #d6b07b 61%, #b8894e 100%);
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow:0 24px 40px rgba(0,0,0,.28);
+    }
+    .sun{position:absolute;right:24px;top:22px;width:82px;height:82px;border-radius:50%;background:radial-gradient(circle,#fffbd1,#ffe45c 60%,#f6b400 100%);box-shadow:0 0 30px rgba(255,219,77,.65)}
+    .board{position:absolute;left:52px;top:88px;width:270px;height:170px;background:#244635;border:8px solid #c88b4d;border-radius:14px;box-shadow:0 10px 18px rgba(0,0,0,.2)}
+    .board::before{content:'1 + 2 + 3 = 6';position:absolute;left:22px;top:26px;color:#e6f9ee;font-size:26px;font-weight:700}
+    .board::after{content:'círculo · cuadrado · triángulo';position:absolute;left:22px;top:76px;color:#c5f1d6;font-size:20px;font-weight:600}
+    .window{position:absolute;right:42px;top:86px;width:220px;height:180px;border:10px solid #ffd9a2;border-radius:18px;background:linear-gradient(#d0f3ff,#8ed8ff 60%,#7fce68 61%,#5bb04f 100%)}
+    .window::before,.window::after{content:'';position:absolute;background:rgba(255,255,255,.55)}
+    .window::before{left:50%;top:0;bottom:0;width:8px;transform:translateX(-50%)}
+    .window::after{top:50%;left:0;right:0;height:8px;transform:translateY(-50%)}
+    .table{position:absolute;left:140px;right:140px;bottom:88px;height:92px;background:linear-gradient(#d39654,#b16f34);border-radius:18px;box-shadow:0 14px 18px rgba(0,0,0,.24)}
+    .table::before,.table::after{content:'';position:absolute;bottom:-54px;width:18px;height:58px;background:#9d612d;border-radius:6px}
+    .table::before{left:18px}.table::after{right:18px}
+    .shape{position:absolute;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 8px 10px rgba(0,0,0,.18))}
+    .circle{width:84px;height:84px;border-radius:50%;background:radial-gradient(circle at 35% 30%, #ffffff, #ff8ad6 25%, #ff4fae 70%, #c32d79 100%)}
+    .square{width:86px;height:86px;border-radius:14px;background:linear-gradient(135deg,#fff4bf,#ffcf3c,#f49b00)}
+    .triangle{width:0;height:0;border-left:46px solid transparent;border-right:46px solid transparent;border-bottom:82px solid #38d4c8}
+    .hex{width:92px;height:52px;background:#8c71ff;position:relative;border-radius:12px}
+    .hex:before,.hex:after{content:'';position:absolute;left:0;width:0;border-left:46px solid transparent;border-right:46px solid transparent}
+    .hex:before{bottom:100%;border-bottom:26px solid #8c71ff}
+    .hex:after{top:100%;border-top:26px solid #8c71ff}
+    .num{position:absolute;width:74px;height:74px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:900;color:#184a91;box-shadow:0 10px 18px rgba(0,0,0,.15)}
+    .label{position:absolute;background:rgba(8,33,63,.82);color:#fff;border-radius:12px;padding:7px 12px;font-weight:700;font-size:14px;border:1px solid rgba(255,255,255,.18)}
+    .beam{position:absolute;inset:0;pointer-events:none;background:
+      radial-gradient(circle at 50% 60%, rgba(255,255,255,.18), rgba(255,255,255,0) 35%),
+      linear-gradient(115deg, transparent 45%, rgba(255,255,255,.12) 50%, transparent 55%),
+      linear-gradient(70deg, transparent 45%, rgba(255,255,255,.09) 50%, transparent 55%);
+      mix-blend-mode:screen;animation: shimmer 5s linear infinite;
+    }
+    .spark{position:absolute;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 16px #fff,0 0 28px #67d7ff;animation: float 5s ease-in-out infinite}
+    .features{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:22px}
+    .feature{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px;text-align:center}
+    .feature strong{display:block;margin-bottom:6px;color:#fff}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+    @keyframes shimmer{0%{transform:translateX(-4%)}50%{transform:translateX(4%)}100%{transform:translateX(-4%)}}
+    @media (max-width: 980px){
+      .hero{grid-template-columns:1fr;min-height:auto;padding:32px 0}
+      .scene{height:440px}
+      .features{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width: 640px){
+      .wrap{padding:18px}
+      .scene{height:360px}
+      .table{left:60px;right:60px}
+      .window{right:18px;width:160px;height:136px}
+      .board{left:18px;width:200px;height:140px}
+      .board::before{font-size:22px;top:18px}
+      .board::after{font-size:15px;top:68px}
+      .features{grid-template-columns:1fr}
+      .grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div>
+        <span class="pill">STEAMLab · Matemáticas multisensoriales · Primaria</span>
+        <h1>Números que se tocan, se escuchan, se mueven y se viven</h1>
+        <p>
+          Este recurso interactivo para GitHub presenta un <strong>aula multisensorial de matemáticas</strong>
+          para niñas y niños de primaria. Incluye luces, sonidos, movimiento y propuestas guiadas para
+          vista, oído, tacto y, pedagógicamente, también olfato y gusto mediante rincones simbólicos.
+        </p>
+        <div class="actions">
+          <a class="btn" href="aula-interactiva.html">Entrar al aula interactiva</a>
+          <a class="btn secondary" href="README.md">Ver instrucciones</a>
+        </div>
+        <div class="grid">
+          <div class="mini">
+            <h3>Vista</h3>
+            <p>Números y figuras geométricas se encienden, cambian de color y responden con destellos.</p>
+          </div>
+          <div class="mini">
+            <h3>Oído</h3>
+            <p>Al interactuar con los objetos, el sistema reproduce tonos suaves y patrones sonoros.</p>
+          </div>
+          <div class="mini">
+            <h3>Tacto</h3>
+            <p>Los elementos se mueven, saltan o vibran visualmente al hacer clic o tocar la pantalla.</p>
+          </div>
+          <div class="mini">
+            <h3>Olfato y gusto</h3>
+            <p>Se incorporan rincones simbólicos con tarjetas de aromas y sabores para actividades reales guiadas.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="scene" aria-hidden="true">
+        <div class="sun"></div>
+        <div class="board"></div>
+        <div class="window"></div>
+        <div class="table"></div>
+        <div class="beam"></div>
+
+        <div class="shape circle" style="left:72px; top:280px"></div>
+        <div class="shape" style="left:248px; top:258px"><div class="triangle"></div></div>
+        <div class="shape square" style="left:348px; top:274px"></div>
+        <div class="shape" style="right:118px; top:268px"><div class="hex"></div></div>
+
+        <div class="num" style="left:132px; top:214px">3</div>
+        <div class="num" style="left:430px; top:204px">7</div>
+        <div class="num" style="right:176px; top:208px">9</div>
+
+        <div class="label" style="left:58px; bottom:18px">Luces · sonido · movimiento</div>
+        <div class="label" style="right:24px; bottom:18px">Aula multisensorial de primaria</div>
+
+        <div class="spark" style="left:34%; top:24%; animation-delay:0s"></div>
+        <div class="spark" style="left:76%; top:26%; animation-delay:1.3s"></div>
+        <div class="spark" style="left:66%; top:70%; animation-delay:2.2s"></div>
+        <div class="spark" style="left:18%; top:66%; animation-delay:3.1s"></div>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="feature"><strong>Nombre sugerido del repositorio</strong>steamlab-matematica-multisensorial</div>
+      <div class="feature"><strong>Página principal</strong>index.html</div>
+      <div class="feature"><strong>Escena interactiva</strong>aula-interactiva.html</div>
+      <div class="feature"><strong>Sin librerías externas</strong>Funciona en GitHub Pages</div>
+      <div class="feature"><strong>Enfoque pedagógico</strong>Exploración, juego y neuroaprendizaje</div>
+    </section>
+  </div>
+</body>
+</html>

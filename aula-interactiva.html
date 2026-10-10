@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STEAMLab · Aula multisensorial de matemáticas</title>
+  <style>
+    :root{
+      --bg:#061629;
+      --panel:#0c2748ee;
+      --panel2:#143961;
+      --line:#5fd8ff;
+      --text:#f4fbff;
+      --muted:#d4ebf5;
+      --accent:#2de2ff;
+      --accent2:#ffd257;
+      --ok:#8cffb6;
+      --wood:#ce8d50;
+      --wood2:#ac6a2e;
+      --floor:#c28a49;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;background:radial-gradient(circle at top, #0e4b87 0%, #08203a 45%, #04111f 100%);
+      color:var(--text);font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;overflow:hidden;
+    }
+    .app{display:flex;flex-direction:column;height:100vh}
+    .topbar{
+      display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap;
+      padding:10px 14px;background:#071a30;border-bottom:1px solid rgba(255,255,255,.12)
+    }
+    .brand strong{display:block;font-size:1.35rem}
+    .brand small{color:#c6e6f3}
+    .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .toolbar label{font-size:.95rem;color:#d4edf8}
+    .toolbar button,.toolbar select{
+      background:#1a426f;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:12px;
+      padding:10px 12px;font-weight:700;cursor:pointer
+    }
+    .toolbar button.primary{background:linear-gradient(135deg,var(--accent),#84f5ff);color:#062038;border:none}
+    .toolbar input[type="range"]{accent-color:var(--accent);width:110px}
+    .main{display:grid;grid-template-columns:360px 1fr;gap:14px;padding:14px;min-height:0;flex:1}
+    .sidebar{display:flex;flex-direction:column;gap:14px;min-height:0}
+    .panel{
+      background:var(--panel);border:1px solid rgba(95,216,255,.22);border-radius:18px;padding:16px;
+      box-shadow:0 14px 30px rgba(0,0,0,.22)
+    }
+    .panel h2,.panel h3{margin:.1rem 0 .55rem}
+    .panel p,.panel li{color:var(--muted);line-height:1.5}
+    .panel ul{margin:.4rem 0 .2rem 1.1rem;padding:0}
+    .counter{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .stat{background:rgba(255,255,255,.06);border-radius:14px;padding:12px;text-align:center}
+    .stat span{display:block;font-size:.82rem;color:#bee8f2}
+    .stat strong{font-size:1.5rem}
+    .note{background:rgba(255,255,255,.06);border-left:4px solid var(--accent2);padding:12px;border-radius:12px}
+    .scene-wrap{position:relative;min-width:0}
+    .scene{
+      position:relative;height:100%;min-height:640px;border-radius:22px;overflow:hidden;
+      background:linear-gradient(#99ddff 0%, #b8e9ff 22%, #e8fbff 22.2%, #f1fff8 24%, #fff4e3 54%, #ddb07a 54.5%, #b67a3c 100%);
+      border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 36px rgba(0,0,0,.25)
+    }
+    .scene::before{content:'';position:absolute;inset:0;background:
+      linear-gradient(120deg, transparent 46%, rgba(255,255,255,.10) 50%, transparent 54%),
+      linear-gradient(80deg, transparent 48%, rgba(255,255,255,.07) 50%, transparent 52%);
+      opacity:.7;pointer-events:none;transform:translateX(var(--shine-offset,0px));
+    }
+    .wall-left,.wall-right{
+      position:absolute;top:102px;width:180px;height:315px;background:rgba(255,255,255,.2);filter:blur(0.2px)
+    }
+    .wall-left{left:-60px;transform:skewY(12deg);background:linear-gradient(90deg,#d7f7ff,#a7e2ff)}
+    .wall-right{right:-60px;transform:skewY(-12deg);background:linear-gradient(-90deg,#d7f7ff,#a7e2ff)}
+    .back-wall{position:absolute;left:170px;right:170px;top:75px;height:240px;background:linear-gradient(#fffef5,#def7ff 65%, #fffbe9);border-radius:18px;border:8px solid #ffd5a0}
+    .floor-grid{position:absolute;left:80px;right:80px;bottom:0;height:290px;background:
+      linear-gradient(to top, rgba(255,255,255,.10), transparent 40%),
+      repeating-linear-gradient(to right, rgba(255,255,255,.12) 0 2px, transparent 2px 86px),
+      repeating-linear-gradient(to top, rgba(255,255,255,.12) 0 2px, transparent 2px 70px);
+      transform:perspective(600px) rotateX(65deg);transform-origin:bottom;border-radius:28px 28px 0 0;opacity:.33}
+    .window{position:absolute;right:42px;top:44px;width:220px;height:160px;border:10px solid #ffd9a2;border-radius:18px;background:linear-gradient(#d4f6ff,#8edbff 60%,#82d16c 60%,#5fb04d 100%)}
+    .window::before,.window::after{content:'';position:absolute;background:rgba(255,255,255,.6)}
+    .window::before{left:50%;top:0;bottom:0;width:8px;transform:translateX(-50%)}
+    .window::after{top:50%;left:0;right:0;height:8px;transform:translateY(-50%)}
+    .chalk{position:absolute;left:42px;top:44px;width:290px;height:170px;background:#294c3b;border-radius:16px;border:8px solid #cb8d4e;box-shadow:0 8px 14px rgba(0,0,0,.18)}
+    .chalk .eq{position:absolute;left:18px;top:18px;font-size:34px;font-weight:900;color:#edfcef}
+    .chalk .sub{position:absolute;left:18px;top:74px;font-size:20px;font-weight:700;color:#d7f6dd}
+    .chalk .sub2{position:absolute;left:18px;top:108px;font-size:20px;font-weight:700;color:#d7f6dd}
+    .projector{position:absolute;left:50%;top:254px;transform:translateX(-50%);width:180px;height:84px;border-radius:28px;background:linear-gradient(#274e7e,#122a46);border:2px solid rgba(255,255,255,.15);box-shadow:0 20px 28px rgba(0,0,0,.25)}
+    .projector::before{content:'';position:absolute;left:50%;top:-28px;transform:translateX(-50%);width:88px;height:52px;border-radius:50%;background:radial-gradient(circle,#bfe9ff,#5fb8ff 55%,#1c5f9d 90%);box-shadow:0 0 28px rgba(95,184,255,.55)}
+    .projector::after{content:'';position:absolute;left:50%;top:20px;transform:translateX(-50%);width:48px;height:48px;border-radius:50%;background:radial-gradient(circle,#ffffff,#b6e9ff 40%,#49b6ff 68%,#0a4f89 100%);box-shadow:0 0 30px rgba(255,255,255,.55)}
+    .beam{position:absolute;left:50%;top:202px;transform:translateX(-50%);width:2px;height:0;pointer-events:none;opacity:.75}
+    .beam::before,.beam::after{content:'';position:absolute;left:50%;transform:translateX(-50%);background:linear-gradient(to bottom, rgba(255,255,255,.45), rgba(95,216,255,0));filter:blur(0.5px);transform-origin:top}
+    .beam::before{top:0;width:220px;height:290px;clip-path:polygon(50% 0%, 0% 100%, 100% 100%)}
+    .beam::after{top:52px;width:360px;height:320px;clip-path:polygon(50% 0%, 18% 100%, 82% 100%);opacity:.55}
+    .table{position:absolute;bottom:128px;width:220px;height:76px;background:linear-gradient(var(--wood),var(--wood2));border-radius:16px;box-shadow:0 10px 16px rgba(0,0,0,.18)}
+    .table::before,.table::after{content:'';position:absolute;bottom:-44px;width:14px;height:48px;background:#995f2d;border-radius:4px}
+    .table::before{left:18px}.table::after{right:18px}
+    .left-table{left:54px}.right-table{right:54px}
+    .scent-card,.taste-card,.shape,.number,.counter-group{position:absolute;cursor:pointer;user-select:none;touch-action:manipulation;transition:transform .25s ease, filter .25s ease, box-shadow .25s ease, opacity .25s ease}
+    .shape:hover,.number:hover,.scent-card:hover,.taste-card:hover,.counter-group:hover{transform:translateY(-4px) scale(1.02)}
+    .shape.active,.number.active,.counter-group.active,.scent-card.active,.taste-card.active{transform:translateY(-7px) scale(1.06);filter:drop-shadow(0 0 20px rgba(255,255,255,.5))}
+    .shape-label,.obj-label{position:absolute;background:rgba(7,26,48,.82);border:1px solid rgba(255,255,255,.14);padding:8px 11px;border-radius:12px;color:#fff;font-weight:700;font-size:14px}
+    .circle{width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 35% 30%, #fff, #ff89d2 24%, #ff4ca8 68%, #bb236f 100%)}
+    .square{width:94px;height:94px;border-radius:16px;background:linear-gradient(135deg,#fff7c4,#ffd64d,#f99e00)}
+    .triangle{width:0;height:0;border-left:52px solid transparent;border-right:52px solid transparent;border-bottom:92px solid #33d2c4}
+    .hex{width:104px;height:56px;background:#8d75ff;border-radius:14px;position:relative}
+    .hex:before,.hex:after{content:'';position:absolute;left:0;width:0;border-left:52px solid transparent;border-right:52px solid transparent}
+    .hex:before{bottom:100%;border-bottom:28px solid #8d75ff}
+    .hex:after{top:100%;border-top:28px solid #8d75ff}
+    .star{width:0;height:0;position:relative;border-right:40px solid transparent;border-bottom:28px solid #ffae2d;border-left:40px solid transparent;transform:rotate(35deg)}
+    .star:before{content:'';position:absolute;top:-18px;left:-26px;border-bottom:32px solid #ffae2d;border-left:12px solid transparent;border-right:12px solid transparent;transform:rotate(-35deg)}
+    .star:after{content:'';position:absolute;top:1px;left:-42px;border-right:40px solid transparent;border-bottom:28px solid #ffae2d;border-left:40px solid transparent;transform:rotate(-70deg)}
+    .number{width:76px;height:76px;border-radius:16px;background:#fff;color:#1c4687;font-size:42px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 18px rgba(0,0,0,.15)}
+    .number.glow,.shape.glow{box-shadow:0 0 24px rgba(255,255,255,.65), 0 0 44px rgba(45,226,255,.5), 0 12px 18px rgba(0,0,0,.15)}
+    .counter-group{display:flex;gap:6px;background:rgba(255,255,255,.4);padding:10px;border-radius:16px;backdrop-filter:blur(3px)}
+    .bead{width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 30%, #fff, #6fefff 25%, #1cbbe3 60%, #057eac 100%);box-shadow:0 0 8px rgba(95,216,255,.35)}
+    .scent-card,.taste-card{width:126px;min-height:94px;border-radius:18px;padding:12px;background:rgba(255,255,255,.86);color:#103052;box-shadow:0 10px 16px rgba(0,0,0,.16);font-weight:800}
+    .scent-card small,.taste-card small{display:block;color:#284d76;font-weight:700;line-height:1.35;margin-top:4px}
+    .scent-wave{position:absolute;width:50px;height:50px;border-radius:50%;border:3px solid rgba(255,255,255,.6);pointer-events:none;animation:wave 1s ease-out forwards}
+    .taste-pop{position:absolute;padding:8px 12px;border-radius:999px;background:#fff4c9;color:#7b5000;font-weight:900;border:1px solid rgba(123,80,0,.18);pointer-events:none;animation:rise 1.2s ease-out forwards}
+    .floating-note{position:absolute;min-width:180px;max-width:220px;background:rgba(8,33,63,.9);border:1px solid rgba(255,255,255,.16);color:#fff;padding:12px;border-radius:14px;box-shadow:0 12px 18px rgba(0,0,0,.22);pointer-events:none;opacity:0;transform:translateY(12px);transition:all .35s ease}
+    .floating-note.show{opacity:1;transform:translateY(0)}
+    .light-orb{position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 0 18px #fff,0 0 28px #67d7ff;opacity:.88;animation:float 5s ease-in-out infinite}
+    .hidden-labels .shape-label,.hidden-labels .obj-label{opacity:0;pointer-events:none}
+    .muted .audio-indicator::after{content:'🔇'}
+    .audio-indicator::after{content:'🔊';margin-left:6px}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+    @keyframes jump{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+    @keyframes rotatePulse{0%{transform:rotate(0) scale(1)}50%{transform:rotate(12deg) scale(1.07)}100%{transform:rotate(0) scale(1)}}
+    @keyframes wave{0%{transform:scale(.35);opacity:.9}100%{transform:scale(2.2);opacity:0}}
+    @keyframes rise{0%{transform:translateY(0);opacity:.95}100%{transform:translateY(-50px);opacity:0}}
+    @media (max-width: 1180px){
+      .main{grid-template-columns:1fr;overflow:auto}
+      .scene{min-height:720px}
+      .sidebar{order:2}
+      .scene-wrap{order:1}
+    }
+    @media (max-width: 780px){
+      body{overflow:auto}
+      .topbar{align-items:flex-start}
+      .toolbar{width:100%}
+      .main{padding:10px}
+      .scene{min-height:640px}
+      .back-wall{left:110px;right:110px;top:110px;height:190px}
+      .window{right:12px;top:30px;width:156px;height:116px}
+      .chalk{left:12px;top:30px;width:210px;height:132px}
+      .chalk .eq{font-size:25px}.chalk .sub,.chalk .sub2{font-size:15px}
+      .table{width:176px;height:64px;bottom:140px}.left-table{left:18px}.right-table{right:18px}
+      .shape-label,.obj-label{font-size:12px;padding:6px 8px}
+      .projector{width:150px;height:74px;top:268px}
+      .scene-wrap{min-height:0}
+    }
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="brand">
+      <strong>STEAMLab · Aula multisensorial de matemáticas</strong>
+      <small>Cuaderno 09 · Primaria · 2.1.1 Números que se tocan y se escuchan</small>
+    </div>
+    <div class="toolbar">
+      <label>Velocidad <input type="range" id="speed" min="0.4" max="1.8" step="0.1" value="1"></label>
+      <button id="toggleAudio" class="audio-indicator">Sonido</button>
+      <button id="toggleLights">Luces: sí</button>
+      <button id="toggleLabels">Etiquetas: sí</button>
+      <button id="challengeBtn">Nuevo reto</button>
+      <button id="fullscreenBtn" class="primary">Pantalla completa</button>
+      <button onclick="location.href='index.html'">Inicio</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <aside class="sidebar">
+      <section class="panel">
+        <h2>¿Qué se puede explorar aquí?</h2>
+        <p>
+          Haz clic o toca los objetos del aula. Los <strong>números</strong> brillan y suenan, las <strong>figuras</strong>
+          se mueven, las <strong>fichas</strong> permiten contar y comparar, y los rincones de <strong>olores</strong> y <strong>sabores</strong>
+          ofrecen ideas para actividades reales acompañadas por el docente.
+        </p>
+        <div class="counter">
+          <div class="stat"><span>Interacciones</span><strong id="interactions">0</strong></div>
+          <div class="stat"><span>Puntos de curiosidad</span><strong id="points">0</strong></div>
+          <div class="stat"><span>Objetos activados</span><strong id="objectsActivated">0</strong></div>
+          <div class="stat"><span>Reto actual</span><strong id="challengeNumber">1</strong></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h3>Reto de exploración</h3>
+        <p id="challengeText">Encuentra un número par, una figura con lados y una agrupación para contar hasta 5.</p>
+        <div class="note" id="feedbackBox">Educcartito recomendaría: explora primero con calma, observa y luego compara.</div>
+      </section>
+
+      <section class="panel">
+        <h3>Ideas multisensoriales</h3>
+        <ul>
+          <li><strong>Vista:</strong> colores, luces, contrastes y destellos al descubrir números y formas.</li>
+          <li><strong>Oído:</strong> tonos suaves y patrones rítmicos al interactuar.</li>
+          <li><strong>Tacto:</strong> movimiento visual de piezas y respuesta al toque o clic.</li>
+          <li><strong>Olfato:</strong> rincón simbólico “limón” y “lavanda” para asociar secuencias o cantidades en el aula real.</li>
+          <li><strong>Gusto:</strong> rincón simbólico “dulce/salado/frutal” para clasificar, comparar y contar con materiales seguros reales.</li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <h3>Orientación pedagógica</h3>
+        <p>
+          Este recurso <strong>no sustituye</strong> la experiencia física del aula. El olfato y el gusto aparecen aquí como
+          <strong>puertas simbólicas</strong> para que el docente diseñe actividades reales, seguras y contextualizadas.
+        </p>
+      </section>
+    </aside>
+
+    <section class="scene-wrap">
+      <div class="scene" id="scene">
+        <div class="wall-left"></div>
+        <div class="wall-right"></div>
+        <div class="back-wall"></div>
+        <div class="floor-grid"></div>
+        <div class="window"></div>
+        <div class="chalk">
+          <div class="eq">2 + 3 = 5</div>
+          <div class="sub">círculo · cuadrado · triángulo</div>
+          <div class="sub2">comparar · contar · crear</div>
+        </div>
+        <div class="beam"></div>
+        <div class="projector" title="Centro de estímulos multisensoriales"></div>
+
+        <div class="table left-table"></div>
+        <div class="table right-table"></div>
+
+        <div class="number interactive" data-kind="number" data-value="2" style="left:112px; top:250px">2</div>
+        <div class="obj-label" style="left:100px; top:330px">Número par</div>
+
+        <div class="number interactive" data-kind="number" data-value="7" style="left:286px; top:230px">7</div>
+        <div class="obj-label" style="left:272px; top:310px">Número mayor</div>
+
+        <div class="number interactive" data-kind="number" data-value="4" style="right:146px; top:252px">4</div>
+        <div class="obj-label" style="right:146px; top:332px">Contar en parejas</div>
+
+        <div class="shape interactive circle" data-kind="shape" data-name="círculo" style="left:72px; top:414px"></div>
+        <div class="shape-label" style="left:72px; top:516px">Círculo</div>
+
+        <div class="shape interactive square" data-kind="shape" data-name="cuadrado" style="left:250px; top:420px"></div>
+        <div class="shape-label" style="left:250px; top:520px">Cuadrado</div>
+
+        <div class="shape interactive" data-kind="shape" data-name="triángulo" style="left:405px; top:414px"><div class="triangle"></div></div>
+        <div class="shape-label" style="left:395px; top:516px">Triángulo</div>
+
+        <div class="shape interactive" data-kind="shape" data-name="hexágono" style="right:262px; top:424px"><div class="hex"></div></div>
+        <div class="shape-label" style="right:246px; top:528px">Hexágono</div>
+
+        <div class="shape interactive" data-kind="shape" data-name="estrella" style="right:94px; top:422px"><div class="star"></div></div>
+        <div class="shape-label" style="right:86px; top:516px">Estrella</div>
+
+        <div class="counter-group interactive" data-kind="count" data-count="5" style="left:112px; bottom:92px">
+          <div class="bead"></div><div class="bead"></div><div class="bead"></div><div class="bead"></div><div class="bead"></div>
+        </div>
+        <div class="obj-label" style="left:112px; bottom:50px">Agrupar hasta 5</div>
+
+        <div class="counter-group interactive" data-kind="count" data-count="8" style="right:168px; bottom:92px">
+          <div class="bead"></div><div class="bead"></div><div class="bead"></div><div class="bead"></div>
+          <div class="bead"></div><div class="bead"></div><div class="bead"></div><div class="bead"></div>
+        </div>
+        <div class="obj-label" style="right:170px; bottom:50px">Comparar 8</div>
+
+        <div class="scent-card interactive" data-kind="scent" data-note="Rincón de olor: en el aula real se pueden usar saquitos aromáticos seguros para asociar secuencias, series o clasificaciones." style="left:24px; top:544px">
+          🌿 Rincón aroma
+          <small>Limón / lavanda / menta</small>
+        </div>
+
+        <div class="taste-card interactive" data-kind="taste" data-note="Rincón de gusto: en el aula real el docente puede usar materiales seguros como frutas o galletas para contar, clasificar y comparar." style="right:24px; top:544px">
+          🍎 Rincón sabor
+          <small>Dulce / salado / frutal</small>
+        </div>
+
+        <div class="floating-note" id="floatingNote"></div>
+
+        <div class="light-orb" style="left:36%; top:16%; animation-delay:0s"></div>
+        <div class="light-orb" style="left:66%; top:18%; animation-delay:1.2s"></div>
+        <div class="light-orb" style="left:53%; top:34%; animation-delay:2.3s"></div>
+        <div class="light-orb" style="left:20%; top:64%; animation-delay:3s"></div>
+        <div class="light-orb" style="left:76%; top:58%; animation-delay:4s"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(() => {
+  const scene = document.getElementById('scene');
+  const speedInput = document.getElementById('speed');
+  const toggleAudioBtn = document.getElementById('toggleAudio');
+  const toggleLightsBtn = document.getElementById('toggleLights');
+  const toggleLabelsBtn = document.getElementById('toggleLabels');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+  const challengeBtn = document.getElementById('challengeBtn');
+  const feedbackBox = document.getElementById('feedbackBox');
+  const challengeText = document.getElementById('challengeText');
+  const challengeNumber = document.getElementById('challengeNumber');
+  const interactionsEl = document.getElementById('interactions');
+  const pointsEl = document.getElementById('points');
+  const objectsActivatedEl = document.getElementById('objectsActivated');
+  const floatingNote = document.getElementById('floatingNote');
+
+  const challenges = [
+    'Encuentra un número par, una figura con lados y una agrupación para contar hasta 5.',
+    'Activa dos números distintos, luego compara cuál es mayor y busca una figura sin lados rectos.',
+    'Explora un rincón sensorial y una agrupación. Después explica cuántos objetos viste o imaginaste.',
+    'Busca una figura con más de 4 lados y un número menor que 5. Luego escucha sus sonidos.',
+    'Cuenta una colección, identifica una forma y crea una pequeña historia matemática con ella.'
+  ];
+
+  let audioEnabled = true;
+  let lightsEnabled = true;
+  let labelsEnabled = true;
+  let interactions = 0;
+  let points = 0;
+  const seenObjects = new Set();
+  let challengeIndex = 0;
+
+  const audioCtx = (window.AudioContext || window.webkitAudioContext) ? new (window.AudioContext || window.webkitAudioContext)() : null;
+
+  function unlockAudio(){
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function tone(freq=440, duration=0.16, type='sine', gainValue=0.055){
+    if (!audioEnabled || !audioCtx) return;
+    unlockAudio();
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, now);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(gainValue, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + duration + 0.03);
+  }
+
+  function chord(base){
+    tone(base, .20, 'triangle', .045);
+    tone(base*1.25, .22, 'sine', .035);
+    tone(base*1.5, .24, 'sine', .03);
+  }
+
+  function updateStats(){
+    interactionsEl.textContent = interactions;
+    pointsEl.textContent = points;
+    objectsActivatedEl.textContent = seenObjects.size;
+    challengeNumber.textContent = String(challengeIndex + 1);
+  }
+
+  function note(message, x, y){
+    floatingNote.textContent = message;
+    floatingNote.style.left = Math.max(12, Math.min(scene.clientWidth - 240, x)) + 'px';
+    floatingNote.style.top = Math.max(12, Math.min(scene.clientHeight - 96, y)) + 'px';
+    floatingNote.classList.add('show');
+    clearTimeout(note._t);
+    note._t = setTimeout(() => floatingNote.classList.remove('show'), 2600);
+  }
+
+  function markInteraction(el){
+    interactions += 1;
+    points += 3;
+    if (!seenObjects.has(el)) {
+      seenObjects.add(el);
+      points += 2;
+    }
+    updateStats();
+  }
+
+  function waveAt(x,y){
+    const w = document.createElement('div');
+    w.className = 'scent-wave';
+    w.style.left = (x-25) + 'px';
+    w.style.top = (y-25) + 'px';
+    scene.appendChild(w);
+    setTimeout(() => w.remove(), 1000);
+  }
+
+  function popAt(x,y,text){
+    const p = document.createElement('div');
+    p.className = 'taste-pop';
+    p.textContent = text;
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+    scene.appendChild(p);
+    setTimeout(() => p.remove(), 1200);
+  }
+
+  function animateObject(el, kind){
+    el.classList.add('active');
+    setTimeout(() => el.classList.remove('active'), 450);
+    if (kind === 'shape') {
+      el.style.animation = 'rotatePulse .7s ease';
+      setTimeout(() => el.style.animation = '', 700);
+    } else {
+      el.style.animation = 'jump .6s ease';
+      setTimeout(() => el.style.animation = '', 600);
+    }
+  }
+
+  function feedback(text){
+    feedbackBox.textContent = text;
+  }
+
+  function handleInteractive(el, ev){
+    unlockAudio();
+    const rect = scene.getBoundingClientRect();
+    const x = (ev.clientX || rect.left + 40) - rect.left;
+    const y = (ev.clientY || rect.top + 40) - rect.top;
+    const kind = el.dataset.kind;
+    markInteraction(el);
+    animateObject(el, kind);
+
+    if (kind === 'number') {
+      const value = Number(el.dataset.value);
+      el.classList.toggle('glow');
+      chord(200 + value * 40);
+      feedback(`Has activado el número ${value}. ¿Puedes representarlo con dedos, fichas o un dibujo?`);
+      note(`Número ${value}: cuenta, compara y representa.`, x, y-20);
+    }
+
+    if (kind === 'shape') {
+      const name = el.dataset.name;
+      tone(320, .16, 'triangle', .04); tone(480, .16, 'triangle', .03);
+      feedback(`Exploraste ${name}. Observa sus lados, puntas o curvas. ¿En qué objetos reales aparece?`);
+      note(`Figura: ${name}.`, x, y-20);
+    }
+
+    if (kind === 'count') {
+      const count = Number(el.dataset.count);
+      tone(260,.14,'sine',.035); tone(330,.14,'sine',.03); tone(390,.16,'sine',.028);
+      feedback(`Has encontrado una agrupación de ${count}. ¿Cómo la dividirías en dos grupos?`);
+      note(`Agrupación: ${count} objetos.`, x, y-18);
+    }
+
+    if (kind === 'scent') {
+      waveAt(x,y); waveAt(x+24,y-12); waveAt(x-16,y+18);
+      tone(500,.18,'sine',.03); tone(650,.18,'sine',.02);
+      feedback('Rincón de aroma: en el aula real el docente puede usar bolsitas aromáticas seguras para clasificar, seriación y memoria matemática.');
+      note(el.dataset.note, x-40, y-30);
+    }
+
+    if (kind === 'taste') {
+      popAt(x,y,'dulce'); popAt(x+26,y-20,'salado'); popAt(x-14,y+14,'frutal');
+      tone(280,.15,'square',.03); tone(360,.15,'triangle',.028); tone(440,.18,'sine',.026);
+      feedback('Rincón de sabor: en el aula real se pueden usar alimentos seguros para contar, agrupar y comparar cantidades.');
+      note(el.dataset.note, x-46, y-26);
+    }
+  }
+
+  document.querySelectorAll('.interactive').forEach(el => {
+    el.addEventListener('pointerdown', ev => handleInteractive(el, ev));
+  });
+
+  speedInput.addEventListener('input', () => {
+    const s = speedInput.value;
+    scene.querySelectorAll('.light-orb').forEach(o => o.style.animationDuration = (6 / s) + 's');
+    scene.style.setProperty('--shine-offset', (s * 12) + 'px');
+    points += 1;
+    updateStats();
+    feedback(`Velocidad sensorial ajustada a ${s}x.`);
+  });
+
+  toggleAudioBtn.addEventListener('click', () => {
+    audioEnabled = !audioEnabled;
+    document.body.classList.toggle('muted', !audioEnabled);
+    toggleAudioBtn.textContent = 'Sonido';
+    feedback(audioEnabled ? 'Sonido activado. Ahora el aula responde con tonos suaves.' : 'Sonido desactivado. El aula sigue funcionando sin audio.');
+  });
+
+  toggleLightsBtn.addEventListener('click', () => {
+    lightsEnabled = !lightsEnabled;
+    toggleLightsBtn.textContent = `Luces: ${lightsEnabled ? 'sí' : 'no'}`;
+    scene.querySelectorAll('.light-orb').forEach(o => o.style.display = lightsEnabled ? '' : 'none');
+    scene.querySelectorAll('.number,.shape').forEach(o => {
+      o.classList.toggle('glow', lightsEnabled && Math.random() > .6);
+      if (!lightsEnabled) o.classList.remove('glow');
+    });
+    feedback(lightsEnabled ? 'Luces activadas. Observa los destellos y contrastes.' : 'Luces reducidas. Ideal si quieres menos estimulación visual.');
+  });
+
+  toggleLabelsBtn.addEventListener('click', () => {
+    labelsEnabled = !labelsEnabled;
+    toggleLabelsBtn.textContent = `Etiquetas: ${labelsEnabled ? 'sí' : 'no'}`;
+    scene.classList.toggle('hidden-labels', !labelsEnabled);
+    feedback(labelsEnabled ? 'Etiquetas visibles.' : 'Etiquetas ocultas. Ahora prueba reconocer por observación.');
+  });
+
+  challengeBtn.addEventListener('click', () => {
+    challengeIndex = (challengeIndex + 1) % challenges.length;
+    challengeText.textContent = challenges[challengeIndex];
+    updateStats();
+    feedback('Nuevo reto activado. Invita a los niños a explicar, no solo a tocar.');
+    tone(420,.16,'triangle',.028); tone(520,.16,'triangle',.024); tone(620,.18,'triangle',.022);
+  });
+
+  fullscreenBtn.addEventListener('click', async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch(e) {
+      feedback('Tu navegador no permitió pantalla completa.');
+    }
+  });
+
+  // gentle autonomous blink effect
+  setInterval(() => {
+    if (!lightsEnabled) return;
+    const targets = [...document.querySelectorAll('.number,.shape')];
+    const t = targets[Math.floor(Math.random() * targets.length)];
+    t.classList.add('glow');
+    setTimeout(() => t.classList.remove('glow'), 650);
+  }, 1400);
+
+  // projector beam shimmer
+  let beamPhase = 0;
+  setInterval(() => {
+    beamPhase += 18;
+    scene.style.setProperty('--shine-offset', Math.sin(beamPhase * Math.PI / 180) * 12 + 'px');
+  }, 120);
+
+  updateStats();
+  feedback('Bienvenido. Explora el aula y combina observación, juego, diálogo y explicación.');
+})();
+</script>
+</body>
+</html>
